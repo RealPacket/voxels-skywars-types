@@ -1,13 +1,15 @@
+--[[
+	Type Generator @ 1.0
+		Generates typings for you (won't have syntax errors lol).
+--]]
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local PlayerScripts = LocalPlayer.PlayerScripts
-local controller = require(PlayerScripts.TS.controllers["afk-controller"]).AfkController
 local OldDebugId = game.GetDebugId
 local lower = string.lower
 local byte = string.byte
--- local round = math.round
 local running = coroutine.running
 local resume = coroutine.resume
 local status = coroutine.status
@@ -64,29 +66,26 @@ end
 
 --- the big (well tbh small now) boi task scheduler himself, handles p much anything as quicc as possible
 local function taskScheduler()
-    if not toggle then
-        scheduled = {}
-        return
-    end
-    if #scheduled > SIMPLESPYCONFIG_MaxRemotes + 100 then
-        table.remove(scheduled, #scheduled)
-    end
-    if #scheduled > 0 then
-        local currentf = scheduled[1]
-        table.remove(scheduled, 1)
-        if type(currentf) == "table" and type(currentf[1]) == "function" then
-            pcall(unpack(currentf))
-        end
-    end
+	if not toggle then
+		scheduled = {}
+		return
+	end
+	if #scheduled > MaxRemotes + 100 then
+		table.remove(scheduled, #scheduled)
+	end
+	if #scheduled > 0 then
+		local currentf = scheduled[1]
+		table.remove(scheduled, 1)
+		if type(currentf) == "table" and type(currentf[1]) == "function" then
+			pcall(unpack(currentf))
+		end
+	end
 end
 
 table.insert(connections, RunService.Heartbeat:Connect(taskScheduler))
 
 local function rawtostring(userdata)
-	if not getrawmetatable
-		or not isreadonly
-		or not makewritable
-		or not makereadonly then
+	if not getrawmetatable or not isreadonly or not makewritable or not makereadonly then
 		return
 	end
 	if type(userdata) == "table" or typeof(userdata) == "userdata" then
@@ -110,7 +109,6 @@ local function rawtostring(userdata)
 	return tostring(userdata)
 end
 
---- value-to-string: value, string (out), level (indentation), parent table, var name, is from tovar
 local CustomGeneration = {
 	Vector3 = (function()
 		local temp = {}
@@ -238,8 +236,7 @@ function formatstr(s, indentation)
 		.. handled
 		.. '"'
 		.. (
-			reachedMax
-			and " --[[ MAXIMUM STRING SIZE REACHED, CHANGE 'MAX_STRING_SIZE' TO ADJUST MAXIMUM SIZE ]]"
+			reachedMax and " --[[ MAXIMUM STRING SIZE REACHED, CHANGE 'MAX_STRING_SIZE' TO ADJUST MAXIMUM SIZE ]]"
 			or ""
 		)
 end
@@ -409,9 +406,9 @@ function t2s(t, l, p, n, vtv, i, pt, path, tables, tI)
 	local size = 0
 	l += indent -- set indentation level
 	for k, v in next, t do -- iterates over table
-        if type(k) == "string" and k:match("^__%w+$") then
-            continue
-        end
+		if type(k) == "string" and k:match("^__%w+$") then
+			continue
+		end
 		size = size + 1 -- changes size for max limit
 		if size > (MAX_TABLE_SIZE or 1000) then
 			s = s
@@ -431,7 +428,7 @@ function t2s(t, l, p, n, vtv, i, pt, path, tables, tI)
 				t,
 				`{path}[{n}{path}]`,
 				tables
-				))}`
+			))}`
 			size -= 1
 			continue
 		end
@@ -467,8 +464,8 @@ function t2s(t, l, p, n, vtv, i, pt, path, tables, tI)
 		end
 	end
 	if #s > 1 and s:sub(-1) == "," then -- removes the last comma because it looks nicer (no way to tell if it's done 'till it's done so...)
-        s = s:sub(1, #s - 1)
-        print("remove last comma")
+		s = s:sub(1, #s - 1)
+		print("remove last comma")
 	end
 	if size > 0 then -- cleanly indents the last curly bracket
 		s = s .. "\n" .. string.rep(" ", l - indent)
@@ -530,9 +527,9 @@ function t2t(t, l, p, n, vtv, i, pt, path, tables, tI)
 				.. "-- MAXIMUM TABLE SIZE REACHED, CHANGE 'MAX_TABLE_SIZE' TO ADJUST MAXIMUM SIZE "
 			break
 		end
-        if type(k) == "string" and k:match("^__%w+$") then
-            continue
-        end
+		if type(k) == "string" and k:match("^__%w+$") then
+			continue
+		end
 		if rawequal(k, t) then -- checks if the table being iterated over is being used as an index within itself (yay, lua)
 			bottomstr ..= `\n{n}{path}[{n}{path}] = {(rawequal(v, k) and `{n}{path}` or v2t(
 				v,
@@ -544,7 +541,7 @@ function t2t(t, l, p, n, vtv, i, pt, path, tables, tI)
 				t,
 				`{path}[{n}{path}]`,
 				tables
-				))}`
+			))}`
 			size -= 1
 			continue
 		end
@@ -558,10 +555,7 @@ function t2t(t, l, p, n, vtv, i, pt, path, tables, tI)
 			scheduleWait()
 		end
 		-- actually serializes the member of the table
-		if type(k) == "string"
-            and not k:match("^__%w+$")
-            and k:match("^[_%a][_%w]*$")
-        then
+		if type(k) == "string" and not k:match("^__%w+$") and k:match("^[_%a][_%w]*$") then
 			s = s
 				.. "\n"
 				.. string.rep(" ", l)
@@ -571,10 +565,10 @@ function t2t(t, l, p, n, vtv, i, pt, path, tables, tI)
 				.. ","
 		elseif type(k) == "number" then
 			if k > 1 then
-                s = s .. " | " .. v2t(v, l, p, n, vtv, k, t, path .. currentPath, tables, tI)
-            else
-                s = s .. "\n" .. string.rep(" ", l) .. v2t(v, l, p, n, vtv, k, t, path .. currentPath, tables, tI)
-            end
+				s = s .. " | " .. v2t(v, l, p, n, vtv, k, t, path .. currentPath, tables, tI)
+			else
+				s = s .. "\n" .. string.rep(" ", l) .. v2t(v, l, p, n, vtv, k, t, path .. currentPath, tables, tI)
+			end
 		else
 			s = s
 				.. "\n"
@@ -676,7 +670,9 @@ function i2p(i, customgen)
 					end
 				end
 			else
-				if not parent then return "nil" end
+				if not parent then
+					return "nil"
+				end
 				if parent.Name:match("[%a_]+[%w_]*") ~= parent.Name then
 					out = ":WaitForChild(" .. formatstr(parent.Name) .. ")" .. out
 				else
@@ -729,16 +725,16 @@ end
 function f2t(f)
 	local argCount, hasVararg = info(f, "a")
 	local params = {}
-    if argCount > 0 then
-        for i = 1, argCount do
-            table.insert(params, `p{i}: any`)
-        end
-    end
-    -- varargs are always at the end of the
-    -- parameter list, anywhere else is invalid.
-    if hasVararg then
+	if argCount > 0 then
+		for i = 1, argCount do
+			table.insert(params, `p{i}: any`)
+		end
+	end
+	-- varargs are always at the end of the
+	-- parameter list, anywhere else is invalid.
+	if hasVararg then
 		table.insert(params, "...any")
-    end
+	end
 	return `({table.concat(params, ", ")}) -> any`
 end
 
@@ -758,9 +754,8 @@ local v2tFunctions = {
 	end,
 	["function"] = function(f)
 		return f2t(f)
-	end
+	end,
 }
-
 
 function v2t(v, l, p, n, vtv, i, pt, path, tables, tI)
 	local t = getType(v)
@@ -789,40 +784,8 @@ function v2s(v, l, p, n, vtv, i, pt, path, tables, tI)
 	return `{vtypeof}({rawtostring(v)}) --[[Generation Failure]]`
 end
 
---- value-to-variable
---- @param t any[]
-function v2v(t)
-	local ret = ""
-	local count = 1
-	for i, v in next, t do
-		if type(i) == "string" and i:match("^[%a_]+[%w_]*$") then
-			ret = ret .. "local " .. i .. " = " .. v2s(v, nil, nil, i, true) .. "\n"
-		elseif rawtostring(i):match("^[%a_]+[%w_]*$") then
-			ret = ret
-				.. "local "
-				.. rawtostring(i):lower()
-				.. "_"
-				.. rawtostring(count)
-				.. " = "
-				.. v2s(v, nil, nil, rawtostring(i):lower() .. "_" .. rawtostring(count), true)
-				.. "\n"
-		else
-			ret = ret
-				.. "local "
-				.. type(v)
-				.. "_"
-				.. rawtostring(count)
-				.. " = "
-				.. v2s(v, nil, nil, type(v) .. "_" .. rawtostring(count), true)
-				.. "\n"
-		end
-		count = count + 1
-	end
-	return ret
-end
-
 local function toLuauTypeString(name, object)
-    return `type {name} = {v2t(object)}`
+	return `type {name} = {v2t(object)}`
 end
 
 -- example:
