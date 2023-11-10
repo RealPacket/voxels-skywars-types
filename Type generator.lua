@@ -1,7 +1,7 @@
 --[[
-	Type Generator @ 1.0.0
+	Type Generator @ 1.0.1
 		Generates typings for you (won't have syntax errors lol).
-		It's slow for big objects, but I don't have time to optimize.
+		It's slow for really big objects, but I don't have time to optimize.
 		(I'll rewrite based off of another type generator, which is way faster for big things)
 --]]
 
