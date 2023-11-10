@@ -1,12 +1,13 @@
 --[[
-	Type Generator @ 1.0
+	Type Generator @ 1.0.0
 		Generates typings for you (won't have syntax errors lol).
+		It's slow for big objects, but I don't have time to optimize.
+		(I'll rewrite based off of another type generator, which is way faster for big things)
 --]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerScripts = LocalPlayer.PlayerScripts
 local OldDebugId = game.GetDebugId
 local lower = string.lower
 local byte = string.byte
@@ -24,7 +25,9 @@ local generation = {}
 -- constants
 local MAX_STRING_SIZE = 10000
 local MAX_TABLE_SIZE = 1000
+local MAX_SCHEDULED = 4000
 local connections = {}
+local getgenv: () -> {[string]: any} = getgenv or getfenv
 
 --- schedules the provided function (and calls it with any args after)
 
@@ -66,11 +69,7 @@ end
 
 --- the big (well tbh small now) boi task scheduler himself, handles p much anything as quicc as possible
 local function taskScheduler()
-	if not toggle then
-		scheduled = {}
-		return
-	end
-	if #scheduled > MaxRemotes + 100 then
+	if #scheduled > MAX_SCHEDULED + 100 then
 		table.remove(scheduled, #scheduled)
 	end
 	if #scheduled > 0 then
@@ -428,7 +427,7 @@ function t2s(t, l, p, n, vtv, i, pt, path, tables, tI)
 				t,
 				`{path}[{n}{path}]`,
 				tables
-			))}`
+				))}`
 			size -= 1
 			continue
 		end
@@ -541,7 +540,7 @@ function t2t(t, l, p, n, vtv, i, pt, path, tables, tI)
 				t,
 				`{path}[{n}{path}]`,
 				tables
-			))}`
+				))}`
 			size -= 1
 			continue
 		end
@@ -789,7 +788,10 @@ local function toLuauTypeString(name, object)
 end
 
 -- example:
+local PlayerScripts = LocalPlayer.PlayerScripts
 local controller = require(PlayerScripts.TS.controllers["projectile-controller"]).ProjectileController
 print(toLuauTypeString("ProjectileController", controller))
 
 connections[1]:Disconnect()
+
+return toLuauTypeString
